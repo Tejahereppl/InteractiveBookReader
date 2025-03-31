@@ -3,7 +3,7 @@ from typing import List, Dict, Any, Optional
 from uuid import UUID
 
 
-from langchain.chat_models import ChatOpenAI
+
 from langchain.chains import LLMChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.summarize import load_summarize_chain
@@ -14,6 +14,8 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate,
 )
 from langchain.docstore.document import Document
+from langchain_groq import ChatGroq
+
 
 from config.settings import settings_obj
 from models.story import Story, Character, StoryScenario, ChatMessage, ChatSession
@@ -26,10 +28,10 @@ class LLMService:
     
     def __init__(self, vector_db_service: VectorDBService):
         self.vector_db = vector_db_service
-        self.llm = ChatOpenAI(
-            model_name=settings_obj.LLM_MODEL, 
+        self.llm = ChatGroq(
+            groq_api_key=settings_obj.GROQ_API_KEY,
+            model_name=settings_obj.LLM_MODEL,  
             temperature=settings_obj.TEMPERATURE,
-            openai_api_key=settings_obj.OPENAI_API_KEY,
             max_tokens=settings_obj.MAX_TOKENS
         )
     

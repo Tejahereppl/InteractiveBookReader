@@ -7,6 +7,7 @@ from models.story import Story, Character, UploadResponse
 from services.pdf_service import PDFService
 from services.vector_db import VectorDBService
 from services.llm_service import LLMService
+from langchain.docstore.document import Document
 
 logger = logging.getLogger(__name__)
 
@@ -80,10 +81,10 @@ async def process_story_content(story: Story, story_chunks, llm_service: LLMServ
     """Background task to process story content"""
     try:
         # Convert story chunks to documents for LLM processing
-        from langchain.docstore.document import Document
+        
         documents = [
             Document(
-                page_content=chunk.content,
+                page_content=chunk.page_content,
                 metadata={
                     "page_number": chunk.page_number,
                     "chunk_index": chunk.chunk_index

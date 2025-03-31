@@ -2,6 +2,9 @@ from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field
 from datetime import datetime
 from uuid import UUID, uuid4
+from pydantic import BaseModel, Field, ConfigDict
+
+
 
 class Character(BaseModel):
     """Model representing a character in a story"""
@@ -22,7 +25,8 @@ class StoryMetadata(BaseModel):
 class Story(BaseModel):
     """Model representing a complete story"""
     id: UUID = Field(default_factory=uuid4)
-    metadata: StoryMetadata
+    metadata: Optional[StoryMetadata] = None
+
     characters: List[Character] = Field(default_factory=list)
     setting: Optional[str] = None
     main_plot: Optional[str] = None
@@ -35,10 +39,11 @@ class StoryChunk(BaseModel):
     """Model representing a chunk of text from a story"""
     id: UUID = Field(default_factory=uuid4)
     story_id: UUID
-    content: str
+    page_content: str
     page_number: Optional[int] = None
-    chunk_index: int
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
 
 class ChatMessage(BaseModel):
     """Model representing a message in a chat"""

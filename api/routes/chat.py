@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# In-memory storage for chat sessions
 chat_sessions = {}
 
 @router.post("/chat", response_model=ChatResponse)

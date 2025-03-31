@@ -2,12 +2,13 @@ import logging
 from typing import List, Dict, Any, Optional
 from uuid import UUID
 
-from langchain.vectorstores import Pinecone
+
 
 
 from langchain.docstore.document import Document
+from pinecone import Pinecone, ServerlessSpec
 import pinecone
-
+import os
 from config.settings import settings_obj
 from models.story import Story, StoryChunk
 
@@ -18,40 +19,40 @@ class VectorDBService:
     
     def __init__(self):
         self.db_type = settings_obj.VECTOR_DB_TYPE
-        self._initialize_vector_db()
+        self.pc = self._initialize_vector_db()
+        self.index_name = "interactive-story"  # Define index name
+        self.index = self._get_index()
     
     def _initialize_vector_db(self):
         """Initialize the vector database based on configuration"""
-        pinecone.init(
-                    api_key=settings_obj.PINECONE_API_KEY,
-                    environment=settings_obj.PINECONE_ENVIRONMENT
-                )
-    
-    
 
-    def _get_vector_store(self, collection_name: str):
-        """Get a vector store instance for a specific collection/namespace"""
-        
-        return Pinecone.from_existing_index(
-                index_name="interactive-story",
-                namespace=collection_name  # No need to pass an embedding function
-            )
-        
+        pinecone.init(api_key=settings_obj.PINECONE_API_KEY, environment=settings_obj.PINECONE_ENVIRONMENT)
+
+    def _get_index(self):
+        """Retrieve an existing Pinecone index"""
+        return pinecone.Index(self.index_name) 
+
+    def get_vector_store(self, namespace: str):
+        """Get a vector store with a specified namespace"""
+        return {
+            "index": self.index,  
+            "namespace": namespace  
+        }
     
     def _chunks_to_documents(self, story_id: UUID, chunks: List[StoryChunk]) -> List[Document]:
         """Convert StoryChunk models to LangChain Document objects"""
         documents = []
         
         for chunk in chunks:
-            # Create a document with the content and metadata
+            
             doc = Document(
-                page_content=chunk.content,
+                page_content=chunk.page_content,
                 metadata={
                     "story_id": str(story_id),
                     "chunk_id": str(chunk.id),
                     "page_number": chunk.page_number,
-                    "chunk_index": chunk.chunk_index,
-                    **chunk.metadata
+                    
+                    
                 }
             )
             documents.append(doc)
@@ -124,9 +125,9 @@ class VectorDBService:
             collection_name = f"story_{story_id}"
             
             if self.db_type == "pinecone":
-                index = pinecone.Index("interactive-story")
+                index = self.pc.Index("interactive-story")
                 index.delete(delete_all=True, namespace=collection_name)
-            else:  # chroma
+            else:  
                 # Get the collection and delete it
                 vector_store = self._get_vector_store(collection_name)
                 vector_store.delete_collection()

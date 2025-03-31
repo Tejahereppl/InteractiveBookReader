@@ -6,7 +6,7 @@ app = FastAPI(
     title="Interactive Story API"
 )
 
-# Configure CORS
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  
@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+
 app.include_router(upload.router, prefix="/api", tags=["upload"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
 
